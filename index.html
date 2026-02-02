@@ -3,11 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>모두의 마블: 디피니티브 에디션</title>
-    <link rel="stylesheet" href="css/main.css">
-    <link rel="stylesheet" href="css/board.css">
-    <link rel="stylesheet" href="css/buildings.css">
-    <link rel="stylesheet" href="css/ui.css">
+    <title>모두의 마블: Vibe Edition</title>
+    <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
     <div id="toast">알림</div>
@@ -18,7 +15,8 @@
                 <div id="center-area">
                     <div id="airplane"><div class="plane-body"></div><div class="plane-wing"></div></div>
                     <div id="card-deck">
-                        <div class="deck-card"></div>
+                        <div class="deck-card" style="transform: translateZ(0px)"></div>
+                        <div class="deck-card" style="transform: translateZ(2px)"></div>
                         <div id="anim-card">
                             <div class="card-back">CHANCE</div>
                             <div class="card-front" id="card-result-text">결과</div>
@@ -26,18 +24,47 @@
                     </div>
                 </div>
             </div>
-            <div id="p0-token" class="token p0"></div> <div id="p1-token" class="token p1"></div>
+            <div id="p0-token" class="token p1"></div>
+            <div id="p1-token" class="token p2"></div>
         </div>
     </div>
 
     <div id="dice-wrapper">
-        <div class="dice-cube" id="d1">...</div>
-        <div class="dice-cube" id="d2">...</div>
+        <div class="dice-cube" id="d1">
+            <div class="face f1">1</div><div class="face f2">2</div><div class="face f3">3</div>
+            <div class="face f4">4</div><div class="face f5">5</div><div class="face f6">6</div>
+        </div>
+        <div class="dice-cube" id="d2">
+            <div class="face f1">1</div><div class="face f2">2</div><div class="face f3">3</div>
+            <div class="face f4">4</div><div class="face f5">5</div><div class="face f6">6</div>
+        </div>
     </div>
 
-    <div id="property-modal">...</div>
-    <div id="ui-panel">...</div>
-    <div id="zoom-control">...</div>
+    <div id="property-modal">
+        <div class="card-ui">
+            <div class="card-header" id="pc-header">도시 이름</div>
+            <div class="card-body">
+                <table class="price-table" id="pc-table"></table>
+            </div>
+            <div class="card-actions" id="pc-actions"></div>
+        </div>
+    </div>
+
+    <div id="ui-panel">
+        <div class="p-info">
+            <div class="p-name p1-c">나 (Player)</div>
+            <div id="p0-money" class="p-money">500만</div>
+        </div>
+        <button id="btn-roll">ROLL</button>
+        <div class="p-info">
+            <div class="p-name p2-c">AI 컴퓨터</div>
+            <div id="p1-money" class="p-money">500만</div>
+        </div>
+    </div>
+
+    <div id="zoom-control">
+        <input type="range" id="zoom-range" min="0.5" max="1.5" step="0.1" value="0.8">
+    </div>
 
     <script type="module" src="js/main.js"></script>
 </body>
