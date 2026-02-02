@@ -22,7 +22,6 @@ export default class Game {
 
         const p = this.players[this.turn];
 
-        // 1. 무인도 체크
         if(p.prison > 0) {
             UI.toast(`${p.name}: 무인도 (${p.prison}턴)`);
             const [d1, d2] = await this.rollDice();
@@ -30,11 +29,8 @@ export default class Game {
             else { p.prison--; this.endTurn(); return; }
         }
 
-        // 2. 주사위 & 이동
         const [d1, d2] = await this.rollDice();
         await this.movePlayer(this.turn, d1+d2);
-
-        // 3. 타일 이벤트
         await this.handleTile(this.turn);
 
         this.endTurn();
@@ -59,7 +55,7 @@ export default class Game {
             UI.toast("세계여행! 서울로 이동합니다.");
             await this.board.animPlane(pid, 39);
             this.players[pid].pos = 39;
-            await this.handleTile(pid); // 재귀 호출
+            await this.handleTile(pid); 
             return;
         }
 
@@ -83,7 +79,6 @@ export default class Game {
             const prices = [1, 0.5, 1, 2, 4].map(r => Math.floor(d.cost * r));
             const tolls = [0.5, 1.5, 3, 6, 15].map(r => Math.floor(d.cost * r));
             
-            // 통행료
             if(s.owner !== -1 && s.owner !== pid) {
                 let toll = tolls[s.level];
                 if(s.level===4) toll *= 2;
@@ -93,7 +88,6 @@ export default class Game {
                 UI.updateMoney(this.players[0].money, this.players[1].money);
             }
 
-            // 건설/인수 모달 (플레이어만)
             if(pid === 0) {
                 const actions = {
                     canBuild: (s.owner===-1 || s.owner===0) && s.level < 4,
@@ -117,12 +111,11 @@ export default class Game {
                     if(this.players[0].money >= cost) {
                         this.players[0].money -= cost;
                         this.players[s.owner].money += cost;
-                        this.mapState[pos].owner = 0; // 소유권 이전
-                        this.board.build(0, pos, s.level); // 색상 변경용
+                        this.mapState[pos].owner = 0;
+                        this.board.build(0, pos, s.level);
                     }
                 }
             } else {
-                // AI 로직
                 if(s.owner === -1 && this.players[1].money > prices[0]) {
                     this.players[1].money -= prices[0];
                     this.board.build(1, pos, 1);
@@ -137,17 +130,21 @@ export default class Game {
     rollDice() {
         return new Promise(resolve => {
             const wrapper = document.getElementById('dice-wrapper');
-            wrapper.style.display = 'block';
+            // Flexbox로 2개 나란히 표시
+            wrapper.style.display = 'flex'; 
             const d1 = document.getElementById('d1'), d2 = document.getElementById('d2');
             const r1 = Math.floor(Math.random()*6)+1, r2 = Math.floor(Math.random()*6)+1;
             
             d1.style.transition = 'none'; d2.style.transition = 'none';
             d1.style.transform = 'rotateX(0) rotateY(0)';
+            d2.style.transform = 'rotateX(0) rotateY(0)';
             
             setTimeout(() => {
                 d1.style.transition = 'transform 1s cubic-bezier(0.2,0.8,0.2,1)';
                 d2.style.transition = 'transform 1s cubic-bezier(0.2,0.8,0.2,1)';
                 const rm = {1:[0,0],2:[0,-90],3:[0,-180],4:[0,90],5:[-90,0],6:[90,0]};
+                
+                // 두 주사위가 서로 다른 방향으로 구르게
                 d1.style.transform = `rotateX(${720+rm[r1][0]}deg) rotateY(${720+rm[r1][1]}deg)`;
                 d2.style.transform = `rotateX(${720+rm[r2][0]}deg) rotateY(${1080+rm[r2][1]}deg)`;
             }, 50);
