@@ -1,1 +1,44 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>모두의 마블: 디피니티브 에디션</title>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/board.css">
+    <link rel="stylesheet" href="css/buildings.css">
+    <link rel="stylesheet" href="css/ui.css">
+</head>
+<body>
+    <div id="toast">알림</div>
 
+    <div id="scene">
+        <div id="board-container">
+            <div id="board">
+                <div id="center-area">
+                    <div id="airplane"><div class="plane-body"></div><div class="plane-wing"></div></div>
+                    <div id="card-deck">
+                        <div class="deck-card"></div>
+                        <div id="anim-card">
+                            <div class="card-back">CHANCE</div>
+                            <div class="card-front" id="card-result-text">결과</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="p0-token" class="token p0"></div> <div id="p1-token" class="token p1"></div>
+        </div>
+    </div>
+
+    <div id="dice-wrapper">
+        <div class="dice-cube" id="d1">...</div>
+        <div class="dice-cube" id="d2">...</div>
+    </div>
+
+    <div id="property-modal">...</div>
+    <div id="ui-panel">...</div>
+    <div id="zoom-control">...</div>
+
+    <script type="module" src="js/main.js"></script>
+</body>
+</html>
