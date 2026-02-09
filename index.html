@@ -9,6 +9,19 @@
 <body>
     <div id="game-container"></div>
 
+    <div id="ui-layer">
+        <div class="panel">
+            <h3>건설 메뉴</h3>
+            <div class="button-group">
+                <button onclick="selectBuilding('habitat_fire')">🔥 불 서식지</button>
+                <button onclick="selectBuilding('habitat_plant')">🌿 식물 서식지</button>
+                <button onclick="selectBuilding('hatchery')">🥚 부화장</button>
+                <button onclick="selectBuilding('breeding')">❤️ 교배소</button>
+            </div>
+            <div id="status-msg">건물을 선택하세요</div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
     <script src="js/game.js"></script>
 </body>
