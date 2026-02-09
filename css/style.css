@@ -3,31 +3,71 @@ body, html {
     padding: 0;
     width: 100%;
     height: 100%;
-    background-color: #000;
-    overflow: hidden; /* 스크롤 방지 */
-    /* 모바일 가로 모드 강제 (일부 브라우저 지원) */
+    background-color: #87CEEB;
+    overflow: hidden;
     display: flex;
     justify-content: center;
     align-items: center;
+    font-family: 'Malgun Gothic', sans-serif;
 }
 
-#game-container {
-    /* 게임 캔버스가 중앙에 오도록 설정 */
-    box-shadow: 0 0 20px rgba(0,255,255,0.2);
+canvas {
+    touch-action: none;
+    display: block;
 }
 
-/* 가로 모드가 아닐 때 안내 메시지를 띄우는 CSS (선택사항) */
-@media screen and (orientation: portrait) {
-    body::after {
-        content: "가로 모드로 플레이해주세요!";
-        position: fixed;
-        top: 0; left: 0; width: 100%; height: 100%;
-        background: rgba(0,0,0,0.9);
-        color: white;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        font-size: 24px;
-        z-index: 9999;
-    }
+/* UI 레이어 스타일 */
+#ui-layer {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 90%;
+    max-width: 600px;
+    pointer-events: none; /* 배경 클릭은 게임으로 통과시키기 위해 */
+}
+
+.panel {
+    background: rgba(255, 255, 255, 0.9);
+    padding: 15px;
+    border-radius: 15px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    text-align: center;
+    pointer-events: auto; /* 패널 내부는 클릭 가능하게 */
+}
+
+.panel h3 {
+    margin: 0 0 10px 0;
+    font-size: 16px;
+    color: #333;
+}
+
+.button-group {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+button {
+    background: #fff;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+button:active {
+    background: #eee;
+    transform: scale(0.95);
+}
+
+#status-msg {
+    margin-top: 10px;
+    font-size: 14px;
+    color: #007bff;
+    font-weight: bold;
 }
