@@ -2,33 +2,22 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Pocket Evolution</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Pocket Evolution: Soul Tamer</title>
+    
     <link rel="stylesheet" href="style.css">
+    
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-
-    <div id="start-screen">
-        <div class="intro-content">
-            <h1 class="game-title">POCKET<br>EVOLUTION</h1>
-            <p class="game-subtitle">Soul Tamer Saga</p>
-            <div id="prologue-text" class="hidden">
-                <p>먼 옛날, 영혼석의 힘으로<br>몬스터를 다루는 테이머들이 있었다.</p>
-                <br>
-                <p>당신은 어느 날,<br>신비한 알 하나를 줍게 되는데...</p>
-            </div>
-            <button id="btn-game-start" class="start-btn" onclick="startGameFlow()">터치하여 시작</button>
-        </div>
-    </div>
 
     <div id="game-container">
         
         <header id="top-bar">
             <div class="resource-group">
                 <span id="player-gold"><i class="fas fa-coins text-yellow"></i> 0</span>
-                <span id="player-stamina"><i class="fas fa-bolt text-blue"></i> 50</span>
+                <span id="player-stamina"><i class="fas fa-bolt text-blue"></i> 50/50</span>
             </div>
             <button id="btn-save-menu" class="icon-btn"><i class="fas fa-cog"></i></button>
         </header>
@@ -38,8 +27,8 @@
             <section id="screen-home" class="screen active">
                 <div class="monster-display">
                     <div class="monster-info-badge">
-                        <span id="home-mon-name">?</span>
-                        <span id="home-mon-rank" class="rank-badge">-</span>
+                        <span id="home-mon-name">이름없음</span>
+                        <span id="home-mon-rank" class="rank-badge">RANK F</span>
                     </div>
                     <div id="home-mon-img" class="pixel-art">🥚</div>
                     
@@ -50,11 +39,11 @@
                         </div>
                         <div class="bar-container">
                             <i class="fas fa-drumstick-bite text-orange"></i>
-                            <div class="bar-bg"><div id="bar-hunger" class="bar-fill" style="width: 100%;"></div></div>
+                            <div class="bar-bg"><div id="bar-hunger" class="bar-fill" style="width: 80%;"></div></div>
                         </div>
                         <div class="bar-container">
                             <i class="fas fa-broom text-blue"></i>
-                            <div class="bar-bg"><div id="bar-clean" class="bar-fill" style="width: 100%;"></div></div>
+                            <div class="bar-bg"><div id="bar-clean" class="bar-fill" style="width: 60%;"></div></div>
                         </div>
                     </div>
                 </div>
@@ -66,8 +55,8 @@
                     <button class="action-btn" onclick="game.action('clean')">
                         <i class="fas fa-soap"></i><br>청소
                     </button>
-                    <button class="action-btn" id="btn-action-train" onclick="game.action('train')">
-                        <i class="fas fa-dumbbell"></i><br><span id="txt-train">훈련</span>
+                    <button class="action-btn" onclick="game.action('train')">
+                        <i class="fas fa-dumbbell"></i><br>훈련
                     </button>
                     <button class="action-btn" onclick="game.evolveCheck()">
                         <i class="fas fa-dna"></i><br>진화
@@ -76,7 +65,7 @@
             </section>
 
             <section id="screen-map" class="screen hidden">
-                <h2 class="screen-title">모험 지역</h2>
+                <h2 class="screen-title">모험 지역 선택</h2>
                 <div class="map-list" id="map-list-container">
                     </div>
             </section>
@@ -84,19 +73,22 @@
             <section id="screen-battle" class="screen hidden">
                 <div class="battle-zone enemy-zone">
                     <div class="battle-hud">
-                        <span id="enemy-name">적</span>
+                        <span id="enemy-name">야생 슬라임</span>
                         <div class="hp-bar-sm"><div id="enemy-hp-bar" style="width: 100%;"></div></div>
                     </div>
                     <div id="enemy-sprite" class="battle-sprite">👾</div>
                 </div>
+
                 <div class="battle-zone player-zone">
                     <div id="player-sprite" class="battle-sprite">🐉</div>
                     <div class="battle-hud">
-                        <span id="battle-player-name">나</span>
+                        <span id="battle-player-name">내 드래곤</span>
                         <div class="hp-bar-sm"><div id="battle-player-hp-bar" style="width: 100%;"></div></div>
                     </div>
                 </div>
-                <div id="battle-log">전투 대기 중...</div>
+
+                <div id="battle-log">야생 몬스터가 나타났다!</div>
+
                 <div class="battle-controls">
                     <button class="battle-btn attack" onclick="battle.attack()">공격</button>
                     <button class="battle-btn skill" onclick="battle.skill()">스킬</button>
@@ -106,45 +98,77 @@
             </section>
 
             <section id="screen-inventory" class="screen hidden">
-                <h2 class="screen-title">가방 (<span id="inven-count">0</span>)</h2>
-                <div class="inventory-grid" id="monster-list"></div>
+                <h2 class="screen-title">몬스터 보관함 (<span id="inven-count">1</span>/30)</h2>
+                <div class="inventory-grid" id="monster-list">
+                    </div>
                 <div id="selected-mon-detail" class="detail-panel hidden">
-                    <h3 id="detail-name">-</h3>
-                    <p id="detail-stats">-</p>
+                    <h3 id="detail-name">이름</h3>
+                    <p id="detail-stats">공: ? / 방: ? / 스피드: ?</p>
                     <div class="detail-actions">
                         <button class="btn-main" onclick="game.setMainMonster()">파트너 지정</button>
-                        <button class="btn-release" onclick="game.releaseMonster()">방생 (영혼석)</button>
+                        <button class="btn-release" onclick="game.releaseMonster()">자연으로 방생</button>
                     </div>
                 </div>
             </section>
 
             <section id="screen-shop" class="screen hidden">
                 <h2 class="screen-title">영혼석 상점</h2>
-                <div class="shop-grid" id="shop-list"></div>
+                <div class="shop-grid">
+                    <div class="shop-item">
+                        <div class="icon">🔥</div>
+                        <span>불의 영혼석</span>
+                        <button onclick="shop.buy('fire_stone')">500G</button>
+                    </div>
+                    <div class="shop-item">
+                        <div class="icon">💧</div>
+                        <span>물의 영혼석</span>
+                        <button onclick="shop.buy('water_stone')">500G</button>
+                    </div>
+                    <div class="shop-item">
+                        <div class="icon">🌿</div>
+                        <span>풀의 영혼석</span>
+                        <button onclick="shop.buy('grass_stone')">500G</button>
+                    </div>
+                </div>
             </section>
 
         </main>
 
         <nav id="nav-bar">
-            <button class="nav-btn active" onclick="ui.showScreen('home')"><i class="fas fa-home"></i><br>홈</button>
-            <button class="nav-btn" onclick="ui.showScreen('map')"><i class="fas fa-map-marked-alt"></i><br>모험</button>
-            <button class="nav-btn" onclick="ui.showScreen('inventory')"><i class="fas fa-briefcase"></i><br>가방</button>
-            <button class="nav-btn" onclick="ui.showScreen('shop')"><i class="fas fa-store"></i><br>상점</button>
+            <button class="nav-btn active" onclick="ui.showScreen('home')">
+                <i class="fas fa-home"></i><br>홈
+            </button>
+            <button class="nav-btn" onclick="ui.showScreen('map')">
+                <i class="fas fa-map-marked-alt"></i><br>모험
+            </button>
+            <button class="nav-btn" onclick="ui.showScreen('inventory')">
+                <i class="fas fa-briefcase"></i><br>가방
+            </button>
+            <button class="nav-btn" onclick="ui.showScreen('shop')">
+                <i class="fas fa-store"></i><br>상점
+            </button>
         </nav>
+
     </div>
 
-    <div id="modal-overlay" class="hidden"></div>
+    <div id="modal-overlay" class="hidden">
+        <div class="modal-content">
+            <h3 id="modal-title">알림</h3>
+            <p id="modal-msg">내용</p>
+            <div class="modal-actions">
+                <button onclick="ui.closeModal()">확인</button>
+            </div>
+        </div>
+    </div>
     
     <div id="save-modal" class="modal-overlay hidden">
         <div class="modal-content">
             <h3>데이터 관리</h3>
-            <button class="full-btn" onclick="dataManager.saveToFile()">저장 코드 복사</button>
-            <button class="full-btn" onclick="dataManager.loadFromFile()">저장 코드 불러오기</button>
+            <button class="full-btn" onclick="dataManager.saveToFile()">코드 내보내기 (저장)</button>
+            <button class="full-btn" onclick="dataManager.loadFromFile()">코드 불러오기 (로드)</button>
             <button class="full-btn close-btn" onclick="document.getElementById('save-modal').classList.add('hidden')">닫기</button>
         </div>
     </div>
 
-    <script src="data.js"></script>
-    <script src="game.js"></script>
-</body>
+    <script src="data.js"></script> <script src="game.js"></script> </body>
 </html>
