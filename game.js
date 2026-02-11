@@ -1,5 +1,5 @@
 /* =========================================
-   game.js - 게임 코어 (버그 수정 및 기능 강화)
+   game.js - 게임 코어 (자연 감소 로직 추가됨)
    ========================================= */
 
 let gameState = {
@@ -16,6 +16,7 @@ let gameState = {
 
 const MAX_STAMINA = 50;
 const RECOVERY_TIME = 60000; // 1분
+const DECAY_RATE = 5; // 1분당 감소량 (배고픔/청결)
 
 /* =========================================
    1. 초기화 및 시스템
@@ -23,16 +24,28 @@ const RECOVERY_TIME = 60000; // 1분
 window.onload = function() {
     loadGame();
     
-    // [신규] 오프라인 스태미나 보상
+    // [신규] 오프라인 시간 보상 및 패널티 계산
     const now = Date.now();
     const diff = now - gameState.lastSaveTime;
+    
+    // 최소 1분 이상 지났을 때만 계산
     if (diff > RECOVERY_TIME) {
-        const recoverAmount = Math.floor(diff / RECOVERY_TIME);
-        // 메인 몬스터뿐만 아니라 모든 몬스터 스태미나 회복
+        const ticks = Math.floor(diff / RECOVERY_TIME);
+        
         gameState.myMonsters.forEach(mon => {
-            mon.stamina = Math.min(MAX_STAMINA, mon.stamina + recoverAmount);
+            // 스태미나 회복
+            mon.stamina = Math.min(MAX_STAMINA, mon.stamina + ticks);
+            
+            // 배고픔 & 청결도 자연 감소 (접속 안 한 만큼 깎임)
+            mon.care.hunger = Math.max(0, mon.care.hunger - (ticks * DECAY_RATE));
+            mon.care.clean = Math.max(0, mon.care.clean - (ticks * DECAY_RATE));
+            
+            // 배고픔이 0이면 체력도 감소 (굶어 죽기 방지용으로 1까지만)
+            if (mon.care.hunger === 0) {
+                mon.currentHp = Math.max(1, mon.currentHp - (ticks * 2));
+            }
         });
-        console.log(`오프라인 시간 동안 스태미나 ${recoverAmount} 회복됨`);
+        console.log(`오프라인 ${ticks}분 경과 적용됨.`);
     }
 
     if (gameState.myMonsters.length === 0) {
@@ -44,10 +57,23 @@ window.onload = function() {
     updateUI();
     renderMapList();
     
-    // [신규] 1분마다 자동 회복 타이머
+    // [핵심 수정] 1분마다 상태 변화 타이머
     setInterval(() => {
         gameState.myMonsters.forEach(mon => {
+            // 1. 스태미나 회복
             if (mon.stamina < MAX_STAMINA) mon.stamina++;
+            
+            // 2. 배고픔 & 청결도 자연 감소
+            // 알 단계에서는 배고픔/청결이 줄지 않음 (부화 전이니까)
+            if (mon.stage !== 'egg') {
+                mon.care.hunger = Math.max(0, mon.care.hunger - DECAY_RATE);
+                mon.care.clean = Math.max(0, mon.care.clean - DECAY_RATE);
+                
+                // 배고픔 0일 때 체력 감소 패널티
+                if (mon.care.hunger === 0) {
+                     mon.currentHp = Math.max(1, mon.currentHp - 5);
+                }
+            }
         });
         updateUI();
     }, RECOVERY_TIME);
@@ -66,7 +92,7 @@ function createMonster(speciesId, stage) {
         stage: stage,
         element: "neutral",
         nick: species.name,
-        care: { hunger: 100, clean: 100 },
+        care: { hunger: 50, clean: 50 }, // 처음엔 반만 채워서 줌 (바로 밥 줄 수 있게)
         exp: 0,
         stamina: 50,
         stats: baseStats,
@@ -108,18 +134,21 @@ const game = {
             if (mon.care.hunger >= 100) return alert("배가 부릅니다.");
             mon.care.hunger = Math.min(100, mon.care.hunger + 30);
             mon.stamina -= 5;
+            // 밥 먹으면 소량의 경험치 획득 (성장 도움)
+            if(mon.stage !== 'adult' && mon.stage !== 'transcendent') mon.exp += 2;
             msg = "냠냠! 맛있게 먹었습니다.";
         } 
         else if (type === 'clean') {
             if (mon.care.clean >= 100) return alert("이미 깨끗합니다.");
             mon.care.clean = Math.min(100, mon.care.clean + 40);
             mon.stamina -= 5;
+            if(mon.stage !== 'adult' && mon.stage !== 'transcendent') mon.exp += 2;
             msg = "반짝반짝! 기분이 좋아보입니다.";
         }
         else if (type === 'train') {
             mon.exp += 10;
-            mon.care.hunger -= 10;
-            mon.care.clean -= 10;
+            mon.care.hunger = Math.max(0, mon.care.hunger - 10); // 훈련하면 배고파짐
+            mon.care.clean = Math.max(0, mon.care.clean - 10);   // 훈련하면 더러워짐
             mon.stamina -= 10;
             msg = "훈련 완료! 경험치가 올랐습니다.";
             if (Math.random() < 0.1) upgradeGrowthRate(mon);
@@ -147,7 +176,6 @@ const game = {
             } else alert(`성장 경험치: ${mon.exp}/50`);
         }
         else if (mon.stage === 'growing') {
-            // [수정] 프롬프트 대신 모달 띄우기
             document.getElementById('evolution-modal').classList.remove('hidden');
         }
         else if (mon.stage === 'adult') {
@@ -167,7 +195,6 @@ const game = {
         updateUI();
     },
 
-    // [신규] 모달에서 호출되는 실제 진화 함수
     evolveTo: function(elementType) {
         const mon = gameState.myMonsters[gameState.mainMonIndex];
         const stoneKey = elementType + "_stone";
@@ -236,8 +263,6 @@ const battle = {
         if (mon.stage === 'egg' || mon.stage === 'infant') return alert("아직 싸울 수 없습니다.");
         if (mon.currentHp <= 0) return alert("체력이 없습니다.");
 
-        // [신규] 맵별 몬스터 로직
-        // 0:숲(풀,일반), 1:화산(불), 2:심해(물), 3:저주땅(어둠,고랭크)
         let pool = GAME_DATA.SPECIES;
         
         if (mapId === 0) pool = pool.filter(s => s.rank === 'common' || s.rank === 'uncommon');
@@ -245,12 +270,11 @@ const battle = {
         else if (mapId === 2) pool = pool.filter(s => s.desc.includes('물') || s.desc.includes('바다'));
         else if (mapId === 3) pool = pool.filter(s => s.rank === 'rare' || s.rank === 'precious' || s.desc.includes('어둠'));
         
-        if (pool.length === 0) pool = GAME_DATA.SPECIES; // 풀백
+        if (pool.length === 0) pool = GAME_DATA.SPECIES; 
 
         const randomSpecies = pool[Math.floor(Math.random() * pool.length)];
         this.enemy = createMonster(randomSpecies.id, "adult");
         
-        // 적 스탯 조정 (내 몬스터 대비 0.8 ~ 1.2배)
         const diff = 0.8 + (mapId * 0.1) + (Math.random() * 0.2);
         this.enemy.stats.hp = Math.floor(mon.stats.hp * diff);
         this.enemy.stats.atk = Math.floor(mon.stats.atk * diff);
@@ -258,13 +282,12 @@ const battle = {
         this.enemy.stats.spd = Math.floor(mon.stats.spd * diff);
         this.enemy.currentHp = this.enemy.stats.hp;
 
-        // 적 속성 부여 (맵 테마에 맞게)
         if (mapId === 1) this.enemy.element = 'fire';
         else if (mapId === 2) this.enemy.element = 'water';
         else if (mapId === 3) this.enemy.element = 'dark';
         else this.enemy.element = ['grass', 'neutral'][Math.floor(Math.random()*2)];
         
-        recalculateStats(this.enemy); // 이름 업데이트
+        recalculateStats(this.enemy);
 
         ui.showScreen('battle');
         this.resetBattleBtns();
@@ -283,13 +306,11 @@ const battle = {
     processTurn: function(actionType) {
         const player = gameState.myMonsters[gameState.mainMonIndex];
         const enemy = this.enemy;
-
-        // 선공 결정
         const playerFirst = player.stats.spd >= enemy.stats.spd;
         
         if (playerFirst) {
             if(this.executeMove(player, enemy, actionType)) return;
-            if(this.executeMove(enemy, player, 'attack')) return; // 적은 평타만
+            if(this.executeMove(enemy, player, 'attack')) return;
         } else {
             if(this.executeMove(enemy, player, 'attack')) return;
             if(this.executeMove(player, enemy, actionType)) return;
@@ -308,17 +329,14 @@ const battle = {
             damage = Math.max(1, attacker.stats.atk - (defender.stats.def * 0.3));
             msg = `${attacker.nick}의 공격!`;
         } else if (type === 'skill') {
-            // [신규] 스킬 로직
             const skillKey = this.getSkillKey(attacker.element);
             const skillData = GAME_DATA.SKILLS[skillKey];
             
-            // 명중률 체크
             if (Math.random() > skillData.acc) {
                 this.log(`${attacker.nick}의 ${skillData.name} 빗나감!`);
                 return false;
             }
 
-            // 상성 계산
             let mult = 1.0;
             const adv = GAME_DATA.ELEMENTS[skillData.type];
             if (adv.strong === defender.element) mult = 1.5;
@@ -352,7 +370,6 @@ const battle = {
             this.enemy.care = { hunger: 50, clean: 50 };
             gameState.myMonsters.push(this.enemy);
             
-            // 승리 처리와 동일하게 UI 변경
             document.getElementById('btn-catch').disabled = true;
             document.getElementById('btn-run').innerText = "돌아가기";
             alert("포획 성공!");
@@ -368,7 +385,6 @@ const battle = {
         if (btnText === "돌아가기") {
             ui.showScreen('map');
         } else {
-            // 도망 확률
             if (Math.random() < 0.5) {
                 this.log("도망쳤습니다.");
                 setTimeout(() => ui.showScreen('map'), 500);
@@ -388,14 +404,11 @@ const battle = {
         }
         if (this.enemy.currentHp <= 0) {
             this.log("승리!");
-            // 보상
             gameState.inventory.gold += 100;
             gameState.myMonsters[gameState.mainMonIndex].exp += 15;
             
-            // UI 변경
             document.getElementById('btn-run').innerText = "돌아가기";
-            document.getElementById('btn-run').classList.add('active'); // 강조
-            // [수정] 죽은 적은 포획 불가로 할지, 기획에 따라 다르지만 보통 죽으면 포획 불가
+            document.getElementById('btn-run').classList.add('active'); 
             document.getElementById('btn-catch').disabled = true; 
             return true;
         }
@@ -414,10 +427,8 @@ const battle = {
         document.getElementById('battle-player-hp-bar').style.width = `${Math.max(0, pPer)}%`;
         document.getElementById('enemy-hp-bar').style.width = `${Math.max(0, ePer)}%`;
         
-        // 적 체력 낮으면 포획 활성화
         if (e.currentHp > 0 && ePer < 40) document.getElementById('btn-catch').disabled = false;
         
-        // 스킬명 버튼에 표시
         const skillName = GAME_DATA.SKILLS[this.getSkillKey(p.element)].name;
         document.getElementById('btn-skill').innerText = skillName;
     },
@@ -425,6 +436,7 @@ const battle = {
     resetBattleBtns: function() {
         document.getElementById('btn-catch').disabled = true;
         document.getElementById('btn-run').innerText = "도망";
+        document.getElementById('btn-run').classList.remove('active');
         document.getElementById('battle-log').innerText = "전투 시작!";
     },
 
@@ -465,7 +477,6 @@ function updateUI() {
     document.getElementById('player-gold').innerHTML = `<i class="fas fa-coins text-yellow"></i> ${gameState.inventory.gold}`;
     document.getElementById('player-stamina').innerHTML = `<i class="fas fa-bolt text-blue"></i> ${mon.stamina}/50`;
 
-    // 홈 화면
     document.getElementById('home-mon-name').innerText = mon.nick;
     document.getElementById('home-mon-rank').innerText = `${mon.rank.toUpperCase()} | ${mon.growthRate}`;
     
@@ -513,7 +524,6 @@ function renderMapList() {
 }
 
 function renderInventory() {
-    // [신규] 자원 표시 업데이트
     const inv = gameState.inventory;
     document.getElementById('res-fire').innerText = inv.fire_stone;
     document.getElementById('res-water').innerText = inv.water_stone;
