@@ -2,127 +2,543 @@
    1. 기본 설정 (Reset & Variables)
    ========================================= */
 :root {
-    --bg-color: #2c3e50;
-    --panel-color: #ecf0f1;
-    --primary-color: #3498db;
-    --danger-color: #e74c3c;
-    --success-color: #2ecc71;
-    --warning-color: #f1c40f;
-    --text-color: #2c3e50;
+    /* 컬러 팔레트 */
+    --bg-color: #2c3e50;       /* 전체 배경 (다크 네이비) */
+    --panel-color: #ecf0f1;    /* 패널 배경 (밝은 회색) */
+    --primary-color: #3498db;  /* 메인 버튼 (블루) */
+    --danger-color: #e74c3c;   /* 공격/삭제 (레드) */
+    --success-color: #2ecc71;  /* 회복/성공 (그린) */
+    --warning-color: #f1c40f;  /* 골드/경고 (옐로우) */
+    --text-color: #2c3e50;     /* 기본 텍스트 */
+    
+    /* UI 사이즈 */
     --nav-height: 70px;
     --header-height: 50px;
 }
 
-* { box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; }
-body { margin: 0; padding: 0; font-family: 'Noto Sans KR', sans-serif; background-color: #1a252f; height: 100vh; display: flex; justify-content: center; overflow: hidden; }
+* {
+    box-sizing: border-box;
+    user-select: none; /* 텍스트 드래그 방지 (앱 느낌) */
+    -webkit-tap-highlight-color: transparent; /* 모바일 터치 하이라이트 제거 */
+}
 
-#game-container { width: 100%; max-width: 480px; height: 100%; background-color: var(--panel-color); display: flex; flex-direction: column; position: relative; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Noto Sans KR', sans-serif;
+    background-color: #1a252f; /* PC 브라우저용 배경 */
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    overflow: hidden; /* 스크롤 방지 */
+}
 
+/* 모바일 컨테이너 (앱 화면) */
+#game-container {
+    width: 100%;
+    max-width: 480px; /* PC에서는 모바일 사이즈로 고정 */
+    height: 100%;
+    background-color: var(--panel-color);
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    box-shadow: 0 0 20px rgba(0,0,0,0.5);
+}
+
+/* 유틸리티 컬러 클래스 */
 .text-red { color: var(--danger-color); }
 .text-blue { color: var(--primary-color); }
 .text-green { color: var(--success-color); }
 .text-yellow { color: #f39c12; }
 .text-orange { color: #e67e22; }
+
 .hidden { display: none !important; }
 
-/* 상단바 */
-#top-bar { height: var(--header-height); background-color: var(--bg-color); color: white; display: flex; justify-content: space-between; align-items: center; padding: 0 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); z-index: 10; }
-.resource-group span { margin-right: 15px; font-weight: bold; font-size: 0.9rem; }
-.icon-btn { background: none; border: none; color: white; font-size: 1.2rem; cursor: pointer; }
+/* =========================================
+   2. 상단바 & 네비게이션
+   ========================================= */
+#top-bar {
+    height: var(--header-height);
+    background-color: var(--bg-color);
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 15px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    z-index: 10;
+}
 
-/* 네비게이션 */
-#nav-bar { height: var(--nav-height); background-color: white; border-top: 1px solid #ddd; display: flex; justify-content: space-around; align-items: center; z-index: 10; }
-.nav-btn { background: none; border: none; color: #95a5a6; font-size: 0.8rem; text-align: center; cursor: pointer; flex: 1; padding: 10px 0; }
-.nav-btn i { font-size: 1.2rem; margin-bottom: 5px; display: block; }
-.nav-btn.active { color: var(--bg-color); font-weight: bold; }
+.resource-group span {
+    margin-right: 15px;
+    font-weight: bold;
+    font-size: 0.9rem;
+}
 
-/* 메인 스크린 */
-#screen-area { flex: 1; overflow-y: auto; position: relative; background-color: #f5f6fa; }
-.screen { padding: 20px; height: 100%; display: flex; flex-direction: column; animation: fadeIn 0.3s ease; }
-.screen-title { margin: 0 0 15px 0; font-size: 1.2rem; color: var(--bg-color); border-bottom: 2px solid #ddd; padding-bottom: 10px; }
+.icon-btn {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.2rem;
+    cursor: pointer;
+}
 
-/* 홈 화면 */
-.monster-display { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; background: white; border-radius: 15px; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-.monster-info-badge { display: flex; flex-direction: column; align-items: center; margin-bottom: 20px; }
-#home-mon-name { font-size: 1.2rem; font-weight: bold; }
-.rank-badge { background: var(--bg-color); color: white; padding: 2px 8px; border-radius: 10px; font-size: 0.7rem; margin-top: 5px; }
-#home-mon-img { font-size: 6rem; margin: 20px 0; animation: float 3s ease-in-out infinite; }
+#nav-bar {
+    height: var(--nav-height);
+    background-color: white;
+    border-top: 1px solid #ddd;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    z-index: 10;
+}
 
-.status-bars { width: 100%; }
-.bar-container { display: flex; align-items: center; margin-bottom: 8px; }
-.bar-container i { width: 20px; margin-right: 10px; text-align: center; }
-.bar-bg { flex: 1; height: 10px; background: #e0e0e0; border-radius: 5px; overflow: hidden; }
-.bar-fill { height: 100%; background: var(--success-color); border-radius: 5px; transition: width 0.5s ease; }
+.nav-btn {
+    background: none;
+    border: none;
+    color: #95a5a6;
+    font-size: 0.8rem;
+    text-align: center;
+    cursor: pointer;
+    flex: 1;
+    padding: 10px 0;
+}
+
+.nav-btn i {
+    font-size: 1.2rem;
+    margin-bottom: 5px;
+    display: block;
+}
+
+.nav-btn.active {
+    color: var(--bg-color);
+    font-weight: bold;
+}
+
+/* =========================================
+   3. 메인 스크린 공통
+   ========================================= */
+#screen-area {
+    flex: 1;
+    overflow-y: auto; /* 내용이 많으면 스크롤 */
+    position: relative;
+    background-color: #f5f6fa;
+}
+
+.screen {
+    padding: 20px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    animation: fadeIn 0.3s ease;
+}
+
+.screen-title {
+    margin: 0 0 15px 0;
+    font-size: 1.2rem;
+    color: var(--bg-color);
+    border-bottom: 2px solid #ddd;
+    padding-bottom: 10px;
+}
+
+/* =========================================
+   4. 홈 화면 (육성)
+   ========================================= */
+.monster-display {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: white;
+    border-radius: 15px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+}
+
+.monster-info-badge {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+#home-mon-name {
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+.rank-badge {
+    background: var(--bg-color);
+    color: white;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 0.7rem;
+    margin-top: 5px;
+}
+
+#home-mon-img {
+    font-size: 6rem; /* 이모지 크기 */
+    margin: 20px 0;
+    animation: float 3s ease-in-out infinite; /* 둥둥 떠다니는 애니메이션 */
+}
+
+/* 상태 게이지 바 */
+.status-bars {
+    width: 100%;
+}
+
+.bar-container {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.bar-container i {
+    width: 20px;
+    margin-right: 10px;
+    text-align: center;
+}
+
+.bar-bg {
+    flex: 1;
+    height: 10px;
+    background: #e0e0e0;
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+.bar-fill {
+    height: 100%;
+    background: var(--success-color);
+    border-radius: 5px;
+    transition: width 0.5s ease, background-color 0.3s;
+}
+
+/* 배고픔/청결도에 따라 색상 변경용 */
 .bar-fill.low { background: var(--danger-color); }
 .bar-fill.mid { background: var(--warning-color); }
 
-.interaction-menu { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 10px; }
-.action-btn { background: white; border: 1px solid #ddd; border-radius: 10px; padding: 15px 5px; font-size: 0.8rem; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.05); transition: transform 0.1s; }
+.interaction-menu {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    gap: 10px;
+}
+
+.action-btn {
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    padding: 15px 5px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    transition: transform 0.1s;
+}
+
 .action-btn:active { transform: scale(0.95); }
 .action-btn i { font-size: 1.5rem; margin-bottom: 5px; color: var(--bg-color); }
 
-/* 전투 화면 */
-#screen-battle { background: linear-gradient(135deg, #a8e063 0%, #56ab2f 100%); padding: 10px; position: relative; }
-.battle-zone { position: relative; height: 35%; display: flex; align-items: center; }
-.enemy-zone { justify-content: flex-end; padding-right: 20px; }
-.player-zone { justify-content: flex-start; padding-left: 20px; align-items: flex-end; }
-.battle-sprite { font-size: 5rem; filter: drop-shadow(0 10px 5px rgba(0,0,0,0.2)); }
-#player-sprite { transform: scaleX(-1); }
-.battle-hud { background: rgba(255,255,255,0.9); padding: 5px 10px; border-radius: 8px; border: 2px solid #333; min-width: 120px; position: absolute; }
+/* =========================================
+   5. 전투 화면 (포켓몬 스타일)
+   ========================================= */
+#screen-battle {
+    background: linear-gradient(135deg, #a8e063 0%, #56ab2f 100%); /* 풀밭 배경 */
+    padding: 10px;
+    position: relative;
+}
+
+.battle-zone {
+    position: relative;
+    height: 35%;
+    display: flex;
+    align-items: center;
+}
+
+.enemy-zone {
+    justify-content: flex-end; /* 오른쪽 배치 */
+    padding-right: 20px;
+}
+
+.player-zone {
+    justify-content: flex-start; /* 왼쪽 배치 */
+    padding-left: 20px;
+    align-items: flex-end; /* 아래쪽 정렬 */
+}
+
+.battle-sprite {
+    font-size: 5rem;
+    filter: drop-shadow(0 10px 5px rgba(0,0,0,0.2));
+}
+
+#player-sprite { transform: scaleX(-1); /* 아군은 뒤돌아본 모습 (좌우반전) */ }
+
+.battle-hud {
+    background: rgba(255,255,255,0.9);
+    padding: 5px 10px;
+    border-radius: 8px;
+    border: 2px solid #333;
+    min-width: 120px;
+    position: absolute;
+}
+
 .enemy-zone .battle-hud { top: 10px; left: 10px; }
 .player-zone .battle-hud { bottom: 30px; right: 10px; }
-.hp-bar-sm { width: 100px; height: 8px; background: #555; border-radius: 4px; margin-top: 5px; overflow: hidden; }
-.hp-bar-sm div { height: 100%; background: var(--success-color); transition: width 0.3s; }
-#battle-log { height: 60px; background: rgba(0,0,0,0.6); color: white; padding: 10px; border-radius: 5px; font-size: 0.9rem; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; text-align: center; }
-.battle-controls { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; height: 20%; }
-.battle-btn { border: none; border-radius: 8px; font-weight: bold; font-size: 1rem; color: white; cursor: pointer; box-shadow: 0 4px 0 rgba(0,0,0,0.2); }
+
+.hp-bar-sm {
+    width: 100px;
+    height: 8px;
+    background: #555;
+    border-radius: 4px;
+    margin-top: 5px;
+    overflow: hidden;
+}
+
+.hp-bar-sm div {
+    height: 100%;
+    background: var(--success-color);
+    transition: width 0.3s;
+}
+
+#battle-log {
+    height: 60px;
+    background: rgba(0,0,0,0.6);
+    color: white;
+    padding: 10px;
+    border-radius: 5px;
+    font-size: 0.9rem;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.battle-controls {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    height: 20%;
+}
+
+.battle-btn {
+    border: none;
+    border-radius: 8px;
+    font-weight: bold;
+    font-size: 1rem;
+    color: white;
+    cursor: pointer;
+    box-shadow: 0 4px 0 rgba(0,0,0,0.2);
+}
 .battle-btn:active { transform: translateY(2px); box-shadow: 0 2px 0 rgba(0,0,0,0.2); }
+
 .battle-btn.attack { background-color: var(--danger-color); }
 .battle-btn.skill { background-color: var(--primary-color); }
 .battle-btn.catch { background-color: var(--warning-color); color: #333; }
 .battle-btn.run { background-color: #95a5a6; }
+/* 도망 버튼이 활성화(돌아가기) 되었을 때 */
+.battle-btn.run.active { background-color: var(--success-color); } 
 .battle-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-/* 인벤토리 & 모험 */
-.map-list { display: flex; flex-direction: column; gap: 10px; }
-.map-card { background: white; padding: 15px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); cursor: pointer; }
+/* =========================================
+   6. 인벤토리 & 모험
+   ========================================= */
+.map-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.map-card {
+    background: white;
+    padding: 15px;
+    border-radius: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    cursor: pointer;
+}
+
 .map-card:hover { background-color: #f0f8ff; }
-.inventory-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 20px; }
-.inven-slot { aspect-ratio: 1/1; background: white; border: 1px solid #ddd; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; cursor: pointer; position: relative; }
+
+.inventory-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-bottom: 20px;
+}
+
+.inven-slot {
+    aspect-ratio: 1/1;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    cursor: pointer;
+    position: relative;
+}
+
 .inven-slot.selected { border: 2px solid var(--primary-color); background: #eaf2f8; }
-.inven-slot .grade-dot { position: absolute; top: 3px; right: 3px; width: 8px; height: 8px; border-radius: 50%; }
+.inven-slot .grade-dot {
+    position: absolute;
+    top: 3px; right: 3px;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+}
 
-/* [신규] 자원 요약 스타일 */
-.resource-summary { display: flex; justify-content: space-between; background: #fff; padding: 10px; border-radius: 8px; margin-bottom: 10px; border: 1px solid #ddd; }
-.res-item { font-size: 0.9rem; font-weight: bold; color: #555; }
+.detail-panel {
+    background: white;
+    padding: 15px;
+    border-radius: 10px;
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+    border: 1px solid #eee;
+}
 
-.detail-panel { background: white; padding: 15px; border-radius: 10px; box-shadow: 0 -2px 10px rgba(0,0,0,0.1); border: 1px solid #eee; }
-.detail-actions { display: flex; gap: 10px; margin-top: 10px; }
+.detail-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
 .btn-main { flex: 1; padding: 10px; background: var(--primary-color); color: white; border: none; border-radius: 5px; }
 .btn-release { flex: 1; padding: 10px; background: var(--bg-color); color: white; border: none; border-radius: 5px; }
 
-/* 상점 */
-.shop-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.shop-item { background: white; padding: 15px; border-radius: 10px; text-align: center; border: 1px solid #eee; }
-.shop-item .icon { font-size: 2rem; margin-bottom: 5px; }
-.shop-item button { width: 100%; margin-top: 10px; padding: 5px; background: var(--warning-color); border: none; border-radius: 5px; font-weight: bold; color: #333; }
+/* [신규 추가] 자원 요약 스타일 */
+.resource-summary {
+    display: flex;
+    justify-content: space-between;
+    background: #fff;
+    padding: 10px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    border: 1px solid #ddd;
+}
+.res-item {
+    font-size: 0.9rem;
+    font-weight: bold;
+    color: #555;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.res-item span {
+    font-size: 0.8rem;
+    margin-top: 2px;
+}
 
-/* 모달 & 애니메이션 */
-.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: flex; justify-content: center; align-items: center; z-index: 100; }
-.modal-content { background: white; width: 80%; max-width: 300px; padding: 20px; border-radius: 15px; text-align: center; animation: zoomIn 0.2s ease; }
-.modal-actions button { background: var(--bg-color); color: white; border: none; padding: 10px 20px; border-radius: 5px; margin-top: 15px; cursor: pointer; }
-.full-btn { width: 100%; padding: 12px; margin-bottom: 10px; background: var(--primary-color); color: white; border: none; border-radius: 8px; font-size: 1rem; }
+/* 상점 */
+.shop-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+.shop-item {
+    background: white;
+    padding: 15px;
+    border-radius: 10px;
+    text-align: center;
+    border: 1px solid #eee;
+}
+.shop-item .icon { font-size: 2rem; margin-bottom: 5px; }
+.shop-item button {
+    width: 100%;
+    margin-top: 10px;
+    padding: 5px;
+    background: var(--warning-color);
+    border: none;
+    border-radius: 5px;
+    font-weight: bold;
+    color: #333;
+}
+
+/* =========================================
+   7. 모달 & 애니메이션
+   ========================================= */
+.modal-overlay {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+}
+
+.modal-content {
+    background: white;
+    width: 80%;
+    max-width: 300px;
+    padding: 20px;
+    border-radius: 15px;
+    text-align: center;
+    animation: zoomIn 0.2s ease;
+}
+
+.modal-actions button {
+    background: var(--bg-color);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    margin-top: 15px;
+    cursor: pointer;
+}
+
+.full-btn {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 10px;
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+}
 .full-btn.close-btn { background: #95a5a6; }
 
-/* [신규] 진화 모달 그리드 */
-.evo-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 20px 0; }
-.evo-btn { padding: 10px; border: none; border-radius: 8px; color: white; font-weight: bold; cursor: pointer; }
+/* [신규 추가] 진화 모달 그리드 */
+.evo-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin: 20px 0;
+}
+.evo-btn {
+    padding: 10px;
+    border: none;
+    border-radius: 8px;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: transform 0.1s;
+}
+.evo-btn:active { transform: scale(0.95); }
 .evo-btn.fire { background-color: #e74c3c; }
 .evo-btn.water { background-color: #3498db; }
 .evo-btn.grass { background-color: #2ecc71; }
 .evo-btn.light { background-color: #f1c40f; color: #333; }
 .evo-btn.dark { background-color: #8e44ad; }
 
+/* 애니메이션 키프레임 (기존 효과 보존) */
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 @keyframes zoomIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-@keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-10px); } 100% { transform: translateY(0px); } }
+@keyframes float { 
+    0% { transform: translateY(0px); } 
+    50% { transform: translateY(-10px); } 
+    100% { transform: translateY(0px); } 
+}
+@keyframes shake {
+    0% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    50% { transform: translateX(5px); }
+    75% { transform: translateX(-5px); }
+    100% { transform: translateX(0); }
+}
+.shake-anim { animation: shake 0.4s; }
