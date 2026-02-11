@@ -19,7 +19,7 @@
                 <span id="player-gold"><i class="fas fa-coins text-yellow"></i> 0</span>
                 <span id="player-stamina"><i class="fas fa-bolt text-blue"></i> 50/50</span>
             </div>
-            <button id="btn-save-menu" class="icon-btn"><i class="fas fa-cog"></i></button>
+            <button id="btn-save-menu" class="icon-btn" onclick="document.getElementById('save-modal').classList.remove('hidden')"><i class="fas fa-cog"></i></button>
         </header>
 
         <main id="screen-area">
@@ -91,14 +91,23 @@
 
                 <div class="battle-controls">
                     <button class="battle-btn attack" onclick="battle.attack()">공격</button>
-                    <button class="battle-btn skill" onclick="battle.skill()">스킬</button>
+                    <button class="battle-btn skill" id="btn-skill" onclick="battle.skill()">스킬</button>
                     <button class="battle-btn catch" id="btn-catch" disabled onclick="battle.tryCatch()">포획</button>
-                    <button class="battle-btn run" onclick="battle.run()">도망</button>
+                    <button class="battle-btn run" id="btn-run" onclick="battle.run()">도망</button>
                 </div>
             </section>
 
             <section id="screen-inventory" class="screen hidden">
                 <h2 class="screen-title">몬스터 보관함 (<span id="inven-count">1</span>/30)</h2>
+                
+                <div class="resource-summary">
+                    <div class="res-item">🔥 <span id="res-fire">0</span></div>
+                    <div class="res-item">💧 <span id="res-water">0</span></div>
+                    <div class="res-item">🌿 <span id="res-grass">0</span></div>
+                    <div class="res-item">☀️ <span id="res-light">0</span></div>
+                    <div class="res-item">🌑 <span id="res-dark">0</span></div>
+                </div>
+
                 <div class="inventory-grid" id="monster-list">
                     </div>
                 <div id="selected-mon-detail" class="detail-panel hidden">
@@ -128,6 +137,16 @@
                         <div class="icon">🌿</div>
                         <span>풀의 영혼석</span>
                         <button onclick="shop.buy('grass_stone')">500G</button>
+                    </div>
+                    <div class="shop-item">
+                        <div class="icon">☀️</div>
+                        <span>빛의 영혼석</span>
+                        <button onclick="shop.buy('light_stone')">1000G</button>
+                    </div>
+                    <div class="shop-item">
+                        <div class="icon">🌑</div>
+                        <span>어둠의 영혼석</span>
+                        <button onclick="shop.buy('dark_stone')">1000G</button>
                     </div>
                 </div>
             </section>
@@ -167,6 +186,21 @@
             <button class="full-btn" onclick="dataManager.saveToFile()">코드 내보내기 (저장)</button>
             <button class="full-btn" onclick="dataManager.loadFromFile()">코드 불러오기 (로드)</button>
             <button class="full-btn close-btn" onclick="document.getElementById('save-modal').classList.add('hidden')">닫기</button>
+        </div>
+    </div>
+
+    <div id="evolution-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <h3>진화 선택</h3>
+            <p>사용할 영혼석을 선택하세요</p>
+            <div class="evo-grid">
+                <button class="evo-btn fire" onclick="game.evolveTo('fire')">🔥<br>불</button>
+                <button class="evo-btn water" onclick="game.evolveTo('water')">💧<br>물</button>
+                <button class="evo-btn grass" onclick="game.evolveTo('grass')">🌿<br>풀</button>
+                <button class="evo-btn light" onclick="game.evolveTo('light')">☀️<br>빛</button>
+                <button class="evo-btn dark" onclick="game.evolveTo('dark')">🌑<br>어둠</button>
+            </div>
+            <button class="full-btn close-btn" onclick="document.getElementById('evolution-modal').classList.add('hidden')">취소</button>
         </div>
     </div>
 
