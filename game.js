@@ -1,5 +1,5 @@
 /* =========================================
-   game.js - 게임 코어 (자연 감소 로직 추가됨)
+   game.js - 게임 코어 (빠른 진행 버전)
    ========================================= */
 
 let gameState = {
@@ -14,9 +14,10 @@ let gameState = {
     lastSaveTime: Date.now()
 };
 
+// [수정] 한국인 속도 패치: 1분 -> 10초로 변경
 const MAX_STAMINA = 50;
-const RECOVERY_TIME = 60000; // 1분
-const DECAY_RATE = 5; // 1분당 감소량 (배고픔/청결)
+const RECOVERY_TIME = 10000; // 10초마다 상태 변화 (기존 1분에서 대폭 단축)
+const DECAY_RATE = 2; // 10초당 배고픔/청결 -2 감소 (1분이면 -12)
 
 /* =========================================
    1. 초기화 및 시스템
@@ -24,11 +25,10 @@ const DECAY_RATE = 5; // 1분당 감소량 (배고픔/청결)
 window.onload = function() {
     loadGame();
     
-    // [신규] 오프라인 시간 보상 및 패널티 계산
+    // 오프라인 시간 보상 및 패널티 계산
     const now = Date.now();
     const diff = now - gameState.lastSaveTime;
     
-    // 최소 1분 이상 지났을 때만 계산
     if (diff > RECOVERY_TIME) {
         const ticks = Math.floor(diff / RECOVERY_TIME);
         
@@ -36,16 +36,16 @@ window.onload = function() {
             // 스태미나 회복
             mon.stamina = Math.min(MAX_STAMINA, mon.stamina + ticks);
             
-            // 배고픔 & 청결도 자연 감소 (접속 안 한 만큼 깎임)
+            // 자연 감소 (접속 안 한 만큼 깎임)
             mon.care.hunger = Math.max(0, mon.care.hunger - (ticks * DECAY_RATE));
             mon.care.clean = Math.max(0, mon.care.clean - (ticks * DECAY_RATE));
             
-            // 배고픔이 0이면 체력도 감소 (굶어 죽기 방지용으로 1까지만)
+            // 배고픔 0이면 체력 감소
             if (mon.care.hunger === 0) {
-                mon.currentHp = Math.max(1, mon.currentHp - (ticks * 2));
+                mon.currentHp = Math.max(1, mon.currentHp - ticks);
             }
         });
-        console.log(`오프라인 ${ticks}분 경과 적용됨.`);
+        console.log(`오프라인 ${ticks * 10}초 경과 적용됨.`);
     }
 
     if (gameState.myMonsters.length === 0) {
@@ -57,25 +57,23 @@ window.onload = function() {
     updateUI();
     renderMapList();
     
-    // [핵심 수정] 1분마다 상태 변화 타이머
+    // [핵심] 10초마다 상태 변화 타이머
     setInterval(() => {
         gameState.myMonsters.forEach(mon => {
-            // 1. 스태미나 회복
+            // 1. 스태미나 회복 (+1)
             if (mon.stamina < MAX_STAMINA) mon.stamina++;
             
-            // 2. 배고픔 & 청결도 자연 감소
-            // 알 단계에서는 배고픔/청결이 줄지 않음 (부화 전이니까)
-            if (mon.stage !== 'egg') {
-                mon.care.hunger = Math.max(0, mon.care.hunger - DECAY_RATE);
-                mon.care.clean = Math.max(0, mon.care.clean - DECAY_RATE);
-                
-                // 배고픔 0일 때 체력 감소 패널티
-                if (mon.care.hunger === 0) {
-                     mon.currentHp = Math.max(1, mon.currentHp - 5);
-                }
+            // 2. 배고픔 & 청결도 자연 감소 (-2)
+            // [수정] 알(egg)도 배고픔이 줄어들도록 변경 (예외 제거)
+            mon.care.hunger = Math.max(0, mon.care.hunger - DECAY_RATE);
+            mon.care.clean = Math.max(0, mon.care.clean - DECAY_RATE);
+            
+            // 배고픔 0일 때 체력 감소 패널티
+            if (mon.care.hunger === 0) {
+                 mon.currentHp = Math.max(1, mon.currentHp - 2);
             }
         });
-        updateUI();
+        updateUI(); // 화면 갱신
     }, RECOVERY_TIME);
 
     // 자동 저장 타이머 (10초)
@@ -92,7 +90,7 @@ function createMonster(speciesId, stage) {
         stage: stage,
         element: "neutral",
         nick: species.name,
-        care: { hunger: 50, clean: 50 }, // 처음엔 반만 채워서 줌 (바로 밥 줄 수 있게)
+        care: { hunger: 50, clean: 50 }, // 시작 시 50%
         exp: 0,
         stamina: 50,
         stats: baseStats,
@@ -110,6 +108,7 @@ function recalculateStats(mon) {
     mon.stats.atk = Math.floor(data.stats.atk * gradeMult);
     mon.stats.def = Math.floor(data.stats.def * gradeMult);
     mon.stats.spd = Math.floor(data.stats.spd * gradeMult);
+    // 진화/성장 시 체력 회복
     mon.currentHp = mon.stats.hp;
 }
 
@@ -126,7 +125,7 @@ const game = {
         const mon = gameState.myMonsters[gameState.mainMonIndex];
         
         if (mon.stage === 'egg' && type === 'train') return alert("알은 훈련할 수 없습니다.");
-        if (mon.stamina < 5) return alert("몬스터가 지쳤습니다. (1분당 1회복)");
+        if (mon.stamina < 5) return alert("몬스터가 지쳤습니다. (10초당 1회복)");
 
         let msg = "";
         
@@ -134,29 +133,31 @@ const game = {
             if (mon.care.hunger >= 100) return alert("배가 부릅니다.");
             mon.care.hunger = Math.min(100, mon.care.hunger + 30);
             mon.stamina -= 5;
-            // 밥 먹으면 소량의 경험치 획득 (성장 도움)
-            if(mon.stage !== 'adult' && mon.stage !== 'transcendent') mon.exp += 2;
+            // 밥 먹으면 소량의 경험치 획득
+            if(mon.stage !== 'adult' && mon.stage !== 'transcendent') mon.exp += 5; // 경험치량 상향
             msg = "냠냠! 맛있게 먹었습니다.";
         } 
         else if (type === 'clean') {
             if (mon.care.clean >= 100) return alert("이미 깨끗합니다.");
             mon.care.clean = Math.min(100, mon.care.clean + 40);
             mon.stamina -= 5;
-            if(mon.stage !== 'adult' && mon.stage !== 'transcendent') mon.exp += 2;
+            if(mon.stage !== 'adult' && mon.stage !== 'transcendent') mon.exp += 5; // 경험치량 상향
             msg = "반짝반짝! 기분이 좋아보입니다.";
         }
         else if (type === 'train') {
-            mon.exp += 10;
-            mon.care.hunger = Math.max(0, mon.care.hunger - 10); // 훈련하면 배고파짐
-            mon.care.clean = Math.max(0, mon.care.clean - 10);   // 훈련하면 더러워짐
+            mon.exp += 15; // 훈련 경험치 상향
+            mon.care.hunger = Math.max(0, mon.care.hunger - 10);
+            mon.care.clean = Math.max(0, mon.care.clean - 10);
             mon.stamina -= 10;
             msg = "훈련 완료! 경험치가 올랐습니다.";
-            if (Math.random() < 0.1) upgradeGrowthRate(mon);
+            if (Math.random() < 0.2) upgradeGrowthRate(mon); // 등급 상승 확률 상향
         }
 
         game.save();
         updateUI();
-        alert(msg);
+        // 알림창이 너무 자주 뜨면 귀찮으므로 제거하거나 console.log로 대체 가능
+        // 현재는 피드백을 위해 유지
+        console.log(msg); 
     },
 
     evolveCheck: function() {
@@ -199,8 +200,9 @@ const game = {
         const mon = gameState.myMonsters[gameState.mainMonIndex];
         const stoneKey = elementType + "_stone";
         
+        // 테스트 편의를 위해 영혼석이 없어도 진화 가능하게 할지? -> 일단은 정석대로
         if (gameState.inventory[stoneKey] < 1) {
-            return alert(`${elementType} 영혼석이 부족합니다!`);
+            return alert(`${elementType} 영혼석이 부족합니다! 상점에서 구매하세요.`);
         }
         
         gameState.inventory[stoneKey]--;
